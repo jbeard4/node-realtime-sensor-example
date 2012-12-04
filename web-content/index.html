@@ -1,16 +1,99 @@
 <html>
 <head>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
 </head>
 <body>
-    <p>Temperature is now:<span id="temperature"></span></p>
+    <p>Temperature is now: <span id="temperature"></span></p>
+    <div id="container" style="min-width: 100%; height: 90%; margin: 0 auto"></div>
     <script>
+    (function(){
       var span = document.getElementById('temperature');
       var socket = io.connect(window.location.protocol + '//' + window.location.host);
       socket.on('sensor', function (data) {
         console.log(data);
         span.textContent = data;
+
+        var series = chart.series[0];
+        var x = (new Date()).getTime(), // current time
+            y = data;
+        series.addPoint([x, y], true, true);
       });
+
+      Highcharts.setOptions({
+          global: {
+              useUTC: false
+          }
+      });
+  
+      var chart;
+
+      chart = new Highcharts.Chart({
+          chart: {
+              renderTo: 'container',
+              type: 'spline',
+              marginRight: 10          
+          },
+          title: {
+              text: 'Live Sensor Data'
+          },
+          xAxis: {
+              type: 'datetime',
+              tickPixelInterval: 150
+          },
+          yAxis: {
+              min : 50,
+              title: {
+                  text: 'Value'
+              },
+              plotLines: [{
+                  value: 0,
+                  width: 1,
+                  color: '#808080'
+              }]
+          },
+          tooltip: {
+              formatter: function() {
+                      return '<b>'+ this.series.name +'</b><br/>'+
+                      Highcharts.dateFormat('%Y-%m-%d %H:%M:%S', this.x) +'<br/>'+
+                      Highcharts.numberFormat(this.y, 2);
+              }
+          },
+          legend: {
+              enabled: false
+          },
+          exporting: {
+              enabled: false
+          },
+          plotOptions: {
+              spline: {
+                  marker: {
+                      enabled: false
+                  },
+                  pointStart: Date.now()
+              }
+          },
+          series: [{
+              name: 'Sensor data',
+              data: (function() {
+                // generate an array of random data
+                var data = [],
+                    time = (new Date()).getTime(),
+                    i;
+
+                for (i = -19; i <= 0; i++) {
+                    data.push({
+                        x: time + i * 1000,
+                        y: 0
+                    });
+                }
+                return data;
+            })()
+ 
+          }]
+        });
+    })();
     </script>
 </body>
 </html>
