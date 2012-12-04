@@ -1,0 +1,16 @@
+<html>
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <p>Temperature is now:<span id="temperature"></span></p>
+    <script>
+      var span = document.getElementById('temperature');
+      var socket = io.connect(window.location.protocol + '//' + window.location.host);
+      socket.on('sensor', function (data) {
+        console.log(data);
+        span.textContent = data;
+      });
+    </script>
+</body>
+</html>
